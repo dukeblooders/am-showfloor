@@ -3,14 +3,14 @@
 //******************************************************************************
 class ImageGalleryArgs
 {
-	basepath = ""		// Use %s for current system/game
-	itemwidth = 100		// Default width
-	itemwidthwide = 150	// Width for wide items
-	loaddelay = 5		// Delay before image load
-	swapdelay = 100		// Delay before image swap (100 = ~1 second)
-	widecodes = null	// Items matching these codes are considered wide
-	ignoredcodes = null	// Items matching these codes are ignored
-	space = 10			// Space between items
+	basepath = ""			// Use %s for current system/game
+	itemwidth = 100			// Default width
+	itemwidthwide = 150		// Width for wide items
+	loaddelay = 400			// Delay before image load
+	swapdelay = 1500		// Delay before image swap (100 = ~1 second)
+	widecodes = null		// Items matching these codes are considered wide
+	ignoredcodes = null		// Items matching these codes are ignored
+	space = 10				// Space between items
 }
 
 
@@ -21,7 +21,7 @@ class ImageGallery
 {
 	args = null; rectangle = null
 	paths = null; images = null; lastswapindex = null
-	currentloaddelay = 0; currentswapdelay = 0
+	previousload = 0; previousswap = 0
 	
 	
 	constructor(_args, _rectangle)
@@ -100,7 +100,7 @@ class ImageGallery
 	function getImagePath()
 	{
 		local path = null
-		for ( local i=0; i<20; i++ ) // retries until keeping the current path
+		for (local i=0; i<20; i++) // retries until keeping the current path
 		{
 			path = paths[rand() % paths.len()]
 			
@@ -114,7 +114,7 @@ class ImageGallery
 	
 	function isImageDisplayed(path)
 	{
-		for ( local i=0; i<images.len(); i++ ) 
+		for (local i=0; i<images.len(); i++) 
 			if (images[i].path == path)
 				return true
 	
@@ -122,54 +122,45 @@ class ImageGallery
 	}
 	
 	
-	// Delayed load
-	function initswap()
-	{
-		if (currentloaddelay > args.loaddelay)
-			swap()
-		else if (currentloaddelay < args.loaddelay)
-			currentloaddelay++
-		else
-		{
-			init()
-			currentloaddelay++
-		}
-	}
-	
-	
 	// Swap image, but not the previous swapped image
-	function swap()
+	function swap(ttime) 
 	{
-		if (images == null || images.len() == 0)
-			return
-			
-		if (currentswapdelay < args.swapdelay)
-			currentswapdelay++
-		else
+		if (previousload == -1)
 		{
-			local index = null
-			do {
-				index = rand() % images.len()
-			} while (index == lastswapindex)	
-		
-			images[index].path = getImagePath()
-			images[index].clear()
-			images[index].create()
+			if (images == null || images.len() == 0)
+				return
 			
-			lastswapindex = index
-			currentswapdelay = 0
+			if (ttime > previousswap + args.swapdelay)
+			{
+				local index = null
+				do {
+					index = rand() % images.len()
+				} while (index == lastswapindex)	
+			
+				images[index].path = getImagePath()
+				images[index].clear()
+				images[index].create()
+				
+				lastswapindex = index
+				previousswap = ttime
+			}		
+		}
+		else if (ttime > previousload + args.loaddelay)
+		{
+			previousload = -1
+			previousswap = ttime
+			init()
 		}
 	}
 	
 	
-	function reset()
+	function reset(ttime)
 	{	
 		if (images != null)
-			for ( local i=0; i<images.len(); i++ ) 
+			for (local i=0; i<images.len(); i++) 
 				images[i].clear()
 				
-		currentloaddelay = 0
-		currentswapdelay = 0
+		previousload = ttime
 	}
 }
 

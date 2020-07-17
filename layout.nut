@@ -74,9 +74,13 @@ conveyor.transition_ms = 200;
 //******************************************************************************
 // Callbacks
 //******************************************************************************
+
+local current_ttime = 0
 function ticks_callback(ttime)
 {
-	gallery.initswap()
+	current_ttime = ttime
+
+	gallery.swap(ttime)
 }
 
 function transition_callback(ttype, var, ttime) 
@@ -84,7 +88,7 @@ function transition_callback(ttype, var, ttime)
 	switch(ttype) 
 	{
 		case Transition.ToNewSelection:	
-			gallery.reset()
+			gallery.reset(current_ttime)
 			break;
 	}
 }

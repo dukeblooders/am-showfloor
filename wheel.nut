@@ -28,7 +28,7 @@ class WheelEntry extends ConveyorSlot
 		if (index >= maxcount) 
 			index = maxcount
 		
-		// The middle image is not at index zero, we must fix the progression manually 
+		// The middle image is not at index zero, we must fix the progress manually 
 		progress -= index * 1.0 / imgcount
 			
 		local width = getWidth(index, progress)
