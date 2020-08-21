@@ -33,11 +33,12 @@ class ImageGallery
 
 	function init() 
 	{
+		images = []
+	
 		local name = fe.game_info(Info.Name)
 		if (isIgnored(name))
 			return
 			
-		images = []
 		getPaths(name)
 		if (paths.len() == 0) return
 			
