@@ -9,6 +9,7 @@ fe.load_module("file");
 fe.do_nut("tools.nut");
 fe.do_nut("preserve.nut");
 fe.do_nut("imageGallery.nut");
+fe.do_nut("jukebox.nut");
 fe.do_nut("wheel.nut");
 
 local flw = fe.layout.width;
@@ -35,16 +36,27 @@ text.word_wrap = true
 //******************************************************************************
 // Image gallery
 //******************************************************************************
-local args = ImageGalleryArgs()
-args.basepath = "../../../Roms/%s/media/box"
-args.itemwidth = flw * 0.1
-args.itemwidthwide = flw * 0.12
-args.widecodes = [ "snes", "n64" ]
-args.ignoredcodes = [ "arcade", "various" ]
-args.space = 15
+local galleryargs = ImageGalleryArgs()
+galleryargs.basepath = "../../../Roms/%s/media/box"
+galleryargs.itemwidth = flw * 0.1
+galleryargs.itemwidthwide = flw * 0.12
+galleryargs.widecodes = [ "snes", "n64" ]
+galleryargs.ignoredcodes = [ "arcade", "various" ]
+galleryargs.space = 15
 
 local galleryRect = Rectangle(flw * 0.33, flh * 0.77, flw * 0.66, flh * 0.2)
-local gallery = ImageGallery(args, galleryRect)
+local gallery = ImageGallery(galleryargs, galleryRect)
+
+
+//******************************************************************************
+// Jukebox
+//******************************************************************************
+local jukeboxargs = JukeboxArgs()
+jukeboxargs.basepath = "music/%s"
+
+local jukeboxRect = Rectangle(flw * 0.43, flh * 0.02, flw * 0.47, flh * 0.05)
+local jukeboxTextRect = Rectangle(flw * 0.47, flh * 0.02, flw * 0.395, flh * 0.045)
+local jukebox = Jukebox(flw, jukeboxargs, jukeboxRect, jukeboxTextRect)
 
 
 //******************************************************************************
@@ -63,11 +75,11 @@ wheelimages.push(WheelImage(0.168,   0.86,  0.18,  10, 150))
 wheelimages.push(WheelImage(0.100,  1.255,  0.18,  15, 150))
 
 local slots = [];
-for ( local i=0; i<wheelimages.len(); i++ )
+for (local i=0;i<wheelimages.len();i++)
 	slots.push(WheelEntry(flw, flh, wheelimages, imgratio, imgpath))
 
 local conveyor = Conveyor();
-conveyor.set_slots( slots );
+conveyor.set_slots(slots);
 conveyor.transition_ms = 200;
 
 
@@ -81,15 +93,21 @@ function ticks_callback(ttime)
 	current_ttime = ttime
 
 	gallery.swap(ttime)
+	jukebox.swap(ttime)
 }
 
 function transition_callback(ttype, var, ttime) 
 {
 	switch(ttype) 
 	{
+		case Transition.ToNewList:
+			jukebox.reset(var)
+			break
+	
 		case Transition.ToNewSelection:	
 			gallery.reset(current_ttime)
-			break;
+			jukebox.reset(var)
+			break
 	}
 }
 
