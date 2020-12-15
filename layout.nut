@@ -66,13 +66,13 @@ local imgratio = 0.5
 local imgpath = "platforms/[Name].png"
 
 local wheelimages = []
-wheelimages.push(WheelImage(0.100, -0.255,  0.18, -15, 150)) 
-wheelimages.push(WheelImage( 0.15,   0.14,  0.18, -10, 150))   
-wheelimages.push(WheelImage(0.171,   0.31,  0.18,  -5, 150)) 
-wheelimages.push(WheelImage( 0.19,    0.5, 0.215,   0, 255))
-wheelimages.push(WheelImage(0.185,   0.69,  0.18,   5, 150))
-wheelimages.push(WheelImage(0.168,   0.86,  0.18,  10, 150))
-wheelimages.push(WheelImage(0.100,  1.255,  0.18,  15, 150))
+wheelimages.push(WheelImage(0.100, -0.255,  0.18,  -9, 150)) 
+wheelimages.push(WheelImage(0.153,   0.13,  0.18,  -7, 150))   
+wheelimages.push(WheelImage(0.180,   0.31,  0.18,  -5, 150)) 
+wheelimages.push(WheelImage(0.193,    0.5, 0.215,   0, 255))
+wheelimages.push(WheelImage(0.188,   0.69,  0.18,   5, 150))
+wheelimages.push(WheelImage(0.164,   0.87,  0.18,   7, 150))
+wheelimages.push(WheelImage(0.100,  1.255,  0.18,   9, 150))
 
 local slots = [];
 for (local i=0;i<wheelimages.len();i++)
