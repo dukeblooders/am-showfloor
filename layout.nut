@@ -42,7 +42,7 @@ galleryargs.itemwidth = flw * 0.1
 galleryargs.itemwidthwide = flw * 0.12
 galleryargs.widecodes = [ "snes", "n64" ]
 galleryargs.ignoredcodes = [ "arcade", "various" ]
-galleryargs.space = 15
+galleryargs.space = flw * 0.01
 
 local galleryRect = Rectangle(flw * 0.33, flh * 0.77, flw * 0.66, flh * 0.2)
 local gallery = ImageGallery(galleryargs, galleryRect)
