@@ -6,7 +6,7 @@ class ImageGalleryArgs
 	basepath = ""			// Use %s for current system/game
 	itemwidth = 100			// Default width
 	itemwidthwide = 150		// Width for wide items
-	loaddelay = 400			// Delay before image load
+	loaddelay = 500			// Delay before image load
 	swapdelay = 1500		// Delay before image swap (100 = ~1 second)
 	widecodes = null		// Items matching these codes are considered wide
 	ignoredcodes = null		// Items matching these codes are ignored
@@ -70,7 +70,8 @@ class ImageGallery
 			local t = r.capture(pathlist[i])
 			
 			if (t != null)
-				paths.push(pathlist[i])
+				if (pathlist[i].find("_") == null) // Ignore gallery objects (files with _)
+					paths.push(pathlist[i])
 		}
 	}
 	
