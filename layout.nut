@@ -14,12 +14,79 @@ fe.do_nut("wheel.nut");
 
 local flw = fe.layout.width;
 local flh = fe.layout.height;
+local current_ttime = 0
 
 
 //******************************************************************************
-// Background
+// Background + System
 //******************************************************************************
-fe.add_image("backgrounds/[Name].png", 0, 0, flw, flh)
+
+local background = fe.add_image("", 0, 0, flw, flh)
+local system = PreserveImage("", flw * 0.32, flh * 0.087, flw * 0.68, flh * 0.65)
+local allSystemPaths = DirectoryListing("systems", false).results
+local currentSystemPaths
+local currentSystemIndex
+local previousSystemSwap = 0
+local systemSwapDelay = 7500
+
+
+function resetSystem(var)
+{
+	previousSystemSwap = current_ttime
+	currentSystemPaths = []
+	system.file_name = ""
+	
+	local name = fe.game_info(Info.Name, var)
+	background.file_name = "backgrounds/" + name + ".png"
+
+	getSystemPaths(name)
+	
+	if (currentSystemPaths.len() != 0)
+	{
+		currentSystemIndex = rand() % currentSystemPaths.len()
+		setSystem()
+	}
+}
+
+function getSystemPaths(name)
+{
+	for (local i=0; i<allSystemPaths.len(); i++ )
+	{
+		local r = regexp(name)
+		local t = r.capture(allSystemPaths[i])
+		
+		if (t != null)
+			if (allSystemPaths[i].len() >= name.len() + 4) // + Extension
+			{
+				if (allSystemPaths[i] == name + ".png") // Match name exactly
+					currentSystemPaths.push(allSystemPaths[i])
+				else if (allSystemPaths[i][name.len()] == 95) // Match name_? (95 = _ )
+					currentSystemPaths.push(allSystemPaths[i])
+			}
+	}
+}
+
+function setSystem()
+{
+	system.file_name = "systems/" + currentSystemPaths[currentSystemIndex]
+	system.update()
+}
+
+function swapSystem(ttime)
+{
+	if (currentSystemPaths == null || currentSystemPaths.len() == 0)
+		return
+
+	if (ttime > previousSystemSwap + systemSwapDelay)
+	{
+		currentSystemIndex = currentSystemIndex + 1
+		if (currentSystemIndex >= currentSystemPaths.len())
+			currentSystemIndex = 0		
+		
+		setSystem()
+		previousSystemSwap = ttime
+	}
+}
 
 
 //******************************************************************************
@@ -66,13 +133,13 @@ local imgratio = 0.5
 local imgpath = "platforms/[Name].png"
 
 local wheelimages = []
-wheelimages.push(WheelImage(0.100, -0.255,  0.18,  -9, 150)) 
-wheelimages.push(WheelImage(0.153,   0.13,  0.18,  -7, 150))   
-wheelimages.push(WheelImage(0.180,   0.31,  0.18,  -5, 150)) 
+wheelimages.push(WheelImage(0.100, -0.255,  0.18,  -9, 165)) 
+wheelimages.push(WheelImage(0.153,   0.13,  0.18,  -7, 190))   
+wheelimages.push(WheelImage(0.180,   0.31,  0.18,  -5, 215)) 
 wheelimages.push(WheelImage(0.193,    0.5, 0.215,   0, 255))
-wheelimages.push(WheelImage(0.188,   0.69,  0.18,   5, 150))
-wheelimages.push(WheelImage(0.164,   0.87,  0.18,   7, 150))
-wheelimages.push(WheelImage(0.100,  1.255,  0.18,   9, 150))
+wheelimages.push(WheelImage(0.188,   0.69,  0.18,   5, 215))
+wheelimages.push(WheelImage(0.164,   0.87,  0.18,   7, 190))
+wheelimages.push(WheelImage(0.100,  1.255,  0.18,   9, 165))
 
 local slots = [];
 for (local i=0;i<wheelimages.len();i++)
@@ -87,11 +154,11 @@ conveyor.transition_ms = 200;
 // Callbacks
 //******************************************************************************
 
-local current_ttime = 0
 function ticks_callback(ttime)
 {
 	current_ttime = ttime
 
+	swapSystem(ttime)
 	gallery.swap(ttime)
 	jukebox.swap(ttime)
 }
@@ -101,10 +168,12 @@ function transition_callback(ttype, var, ttime)
 	switch(ttype) 
 	{
 		case Transition.ToNewList:
+			resetSystem(var)
 			jukebox.reset(var)
 			break
 	
 		case Transition.ToNewSelection:	
+			resetSystem(var)
 			gallery.reset(current_ttime)
 			jukebox.reset(var)
 			break
