@@ -4,10 +4,12 @@
 class ImageGalleryArgs
 {
 	basepath = ""			// Use %s for current system/game
+	itemwidthnarrow = 75	// Width for narrow items
 	itemwidth = 100			// Default width
 	itemwidthwide = 150		// Width for wide items
 	loaddelay = 500			// Delay before image load
 	swapdelay = 1500		// Delay before image swap (100 = ~1 second)
+	narrowcodes = null		// Items matching these codes are considered narrow
 	widecodes = null		// Items matching these codes are considered wide
 	ignoredcodes = null		// Items matching these codes are ignored
 	space = 10				// Space between items
@@ -42,7 +44,8 @@ class ImageGallery
 		getPaths(name)
 		if (paths.len() == 0) return
 			
-		local width = isWide(name) ? args.itemwidthwide : args.itemwidth
+		local width = isWide(name) ? args.itemwidthwide : 
+			isNarrow(name) ? args.itemwidthnarrow : args.itemwidth
 		local imgcount = (rectangle.width / (width + args.space)).tointeger()
 					
 		// Center the gallery inside the rectangle
@@ -92,6 +95,17 @@ class ImageGallery
 		if (args.widecodes != null)
 			for (local i=0; i<args.widecodes.len(); i++)
 				if (args.widecodes[i] == name)
+					return true
+			
+		return false
+	}
+	
+	
+	function isNarrow(name)
+	{
+		if (args.narrowcodes != null)
+			for (local i=0; i<args.narrowcodes.len(); i++)
+				if (args.narrowcodes[i] == name)
 					return true
 			
 		return false

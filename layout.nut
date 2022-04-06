@@ -105,8 +105,10 @@ text.word_wrap = true
 //******************************************************************************
 local galleryargs = ImageGalleryArgs()
 galleryargs.basepath = "../../../Roms/%s/media/box"
+galleryargs.itemwidthnarrow = flw * 0.08
 galleryargs.itemwidth = flw * 0.1
 galleryargs.itemwidthwide = flw * 0.12
+galleryargs.narrowcodes = [ "psp" ]
 galleryargs.widecodes = [ "snes", "n64" ]
 galleryargs.ignoredcodes = [ "arcade", "various" ]
 galleryargs.space = flw * 0.01
