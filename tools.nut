@@ -1,14 +1,12 @@
 class Game
 {
 	name = null
-	title = null
 	manufacturer = null
 	extra = null
 	
-	constructor(_name, _title, _manufacturer, _extra)
+	constructor(_name, _manufacturer, _extra)
 	{
 		name = _name
-		title = _title
 		manufacturer = _manufacturer
 		extra = _extra
 	}

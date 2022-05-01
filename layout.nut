@@ -51,7 +51,7 @@ while (!file.eos())
 		index++
 	}
 
-	gamelist.append(Game(values[0], values[1], values[5], values[15]))
+	gamelist.append(Game(values[0], values[5], values[15]))
 }
 
 
@@ -161,7 +161,7 @@ arcadeGalleryArgs.manufacturercodepath = "arcade"
 arcadeGalleryArgs.imagepath = "../../../Roms/arcade/media/images/%s.png"
 arcadeGalleryArgs.wheelpath = "../../../Roms/arcade/media/wheel/%s.png"
 
-local logorect = Rectangle(flw * 0.006, flh * 0.65, flw * 0.17, flh * 0.08)
+local logorect = Rectangle(flw * 0.007, flh * 0.65, flw * 0.17, flh * 0.072)
 
 local wheelrects = []
 wheelrects.append(Rectangle(flw * 0.3735, flh * 0.02, flw * 0.266, flh * 0.12))

@@ -21,15 +21,22 @@ class ImageGalleryArgs
 //******************************************************************************
 class ImageGallery
 {
-	args = null; rectangle = null
-	paths = null; images = null; lastswapindex = null
-	previousload = 0; previousswap = 0
+	args = null 
+	rectangle = null
+	
+	paths = null 
+	images = null
+	lastswapindex = null
+	previousload = null
+	previousswap = null
 	
 	
 	constructor(_args, _rectangle)
 	{
 		args = _args
 		rectangle = _rectangle
+		previousload = -1
+		previousswap = -1
 	}
 
 
@@ -51,7 +58,7 @@ class ImageGallery
 		// Center the gallery inside the rectangle
 		local currentx = rectangle.x + (rectangle.width - (imgcount * width) - (args.space * (imgcount - 1))) / 2
 
-		for ( local i=0; i<imgcount; i++ )
+		for (local i = 0; i < imgcount; i++)
 		{
 			// Create an image in the middle of item width
 			local img = ImageGalleryItem(getImagePath(), currentx, rectangle.y, width, rectangle.height)
@@ -67,7 +74,7 @@ class ImageGallery
 		local pathlist = DirectoryListing(format(args.basepath, name)).results
 	
 		paths = []
-		for (local i=0; i<pathlist.len(); i++ )
+		for (local i = 0; i < pathlist.len(); i++)
 		{
 			local r = regexp(".png")
 			local t = r.capture(pathlist[i])
@@ -82,7 +89,7 @@ class ImageGallery
 	function isIgnored(name)
 	{
 		if (args.ignoredcodes != null)
-			for (local i=0; i<args.ignoredcodes.len(); i++)
+			for (local i = 0; i < args.ignoredcodes.len(); i++)
 				if (args.ignoredcodes[i] == name)
 					return true
 			
@@ -93,7 +100,7 @@ class ImageGallery
 	function isWide(name)
 	{
 		if (args.widecodes != null)
-			for (local i=0; i<args.widecodes.len(); i++)
+			for (local i = 0; i < args.widecodes.len(); i++)
 				if (args.widecodes[i] == name)
 					return true
 			
@@ -104,7 +111,7 @@ class ImageGallery
 	function isNarrow(name)
 	{
 		if (args.narrowcodes != null)
-			for (local i=0; i<args.narrowcodes.len(); i++)
+			for (local i = 0; i < args.narrowcodes.len(); i++)
 				if (args.narrowcodes[i] == name)
 					return true
 			
@@ -116,7 +123,7 @@ class ImageGallery
 	function getImagePath()
 	{
 		local path = null
-		for (local i=0; i<20; i++) // retries until keeping the current path
+		for (local i = 0; i < 20; i++) // retries until keeping the current path
 		{
 			path = paths[rand() % paths.len()]
 			
@@ -130,7 +137,7 @@ class ImageGallery
 	
 	function isImageDisplayed(path)
 	{
-		for (local i=0; i<images.len(); i++) 
+		for (local i = 0; i < images.len(); i++) 
 			if (images[i].path == path)
 				return true
 	
@@ -141,7 +148,7 @@ class ImageGallery
 	// Swap image, but not the previous swapped image
 	function swap(ttime) 
 	{
-		if (previousload == -1)
+		if (previousload == 0)
 		{
 			if (images == null || images.len() == 0)
 				return
@@ -163,7 +170,7 @@ class ImageGallery
 		}
 		else if (ttime > previousload + args.loaddelay)
 		{
-			previousload = -1
+			previousload = 0
 			previousswap = ttime
 			init()
 		}
@@ -173,7 +180,7 @@ class ImageGallery
 	function reset(ttime)
 	{	
 		if (images != null)
-			for (local i=0; i<images.len(); i++) 
+			for (local i = 0; i < images.len(); i++) 
 				images[i].clear()
 				
 		previousload = ttime

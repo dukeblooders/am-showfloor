@@ -32,8 +32,8 @@ class ArcadeGallery
 	constructor(_args, gamelist, logorect, wheelrects, imagerects)
 	{
 		args = _args
-		previousload = 0
-		previousswap = 0
+		previousload = -1
+		previousswap = -1
 		
 		logo = PreserveImage("", logorect.x, logorect.y, logorect.width, logorect.height)
 		logo.rotation = -90
@@ -177,21 +177,21 @@ class ArcadeGallery
 	
 	function swap(ttime) 
 	{
-		if (previousload == -1)
+		if (previousload == 0)
 		{
 			if (currentcode == null)
 				return
 			
-			if (previousswap != -1)
-				if (ttime > previousswap + args.swapdelay)
-				{
-					previousswap = -1
-					reload(0)
-				}		
+			if (ttime > previousswap + args.swapdelay)
+			{
+				reload(0)
+			
+				previousswap = ttime
+			}		
 		}
 		else if (ttime > previousload + args.loaddelay)
 		{
-			previousload = -1
+			previousload = 0
 			previousswap = ttime
 			reload(0)
 		}
