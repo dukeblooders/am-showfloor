@@ -29,43 +29,51 @@ class ArcadeGallery
 	previousswap = null
 	
 	
-	constructor(_args, gamelist, logorect, wheelrects, imagerects)
+	constructor(_args, gamelist, flw, flh)
 	{
 		args = _args
 		previousload = -1
 		previousswap = -1
 		
-		logo = PreserveImage("", logorect.x, logorect.y, logorect.width, logorect.height)
+		logo = PreserveImage("", flw * 0.007, flh * 0.65, flw * 0.17, flh * 0.072)
 		logo.rotation = -90
 		logo.art.visible = false
 		
 		wheels = []
 		images = []
 			
-		local tempimg = null
-		foreach	(imagerect in imagerects)
-		{
-			tempimg = PreserveImage("", imagerect.x, imagerect.y, imagerect.width, imagerect.height)
-			tempimg.art.visible = false
-		
-			images.append(tempimg)
-		}
-		
-		local tempwheel = null
-		foreach	(wheelrect in wheelrects)
-		{
-			tempwheel = PreserveImage("", wheelrect.x, wheelrect.y, wheelrect.width, wheelrect.height)
-			tempwheel.art.visible = false
-		
-			wheels.append(tempwheel)
-		}
+		// Screen - Left to right
+		images.append(addImage(flw * 0.394, flh * 0.46, flw * 0.1065, flh * 0.174, -29, 7, -3, -15, -2.2))
+		images.append(addImage(flw * 0.567, flh * 0.42, flw * 0.14, flh * 0.213, -37, 7, -2, -20, -1.8))
+		images.append(addImage(flw * 0.794, flh * 0.366, flw * 0.185, flh * 0.266, -45, 9, -5, -22, -1.4))
 			
+			
+		// Wheel - Left to right
+		wheels.append(addImage(flw * 0.370, flh * 0.333, flw * 0.12, flh * 0.062, -9, -5, 0, -7, -8))	
+		wheels.append(addImage(flw * 0.535, flh * 0.26, flw * 0.158, flh * 0.076, -11, -2, 0, -10, -8))		
+		wheels.append(addImage(flw * 0.751, flh * 0.169, flw * 0.21, flh * 0.096, -13, 0, 0, -12, -8))			
+					
 		getCodes()
 		
 		games = []
 		foreach (game in gamelist)
 			if (game.extra == args.systemcode)
 				games.append(game)
+	}
+	
+	
+	function addImage(x, y, width, height, skew_x, skew_y, pinch_x, pinch_y, rotation)
+	{
+		local tempimg = PreserveImage("", x, y, width, height)
+		tempimg.art.visible = false
+
+		tempimg.skew_x = skew_x
+		tempimg.skew_y = skew_y
+		tempimg.pinch_x = pinch_x
+		tempimg.pinch_y = pinch_y
+		tempimg.rotation = rotation
+		
+		return tempimg
 	}
 	
 	

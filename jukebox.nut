@@ -8,7 +8,9 @@ class JukeboxArgs
 	input_next = "custom2"			// Next sound
 	input_stop_play = "custom3"		// Stop/Play sound
 	input_delay = 200				// Delay between inputs
-	text_charsize = 22				// Size of sound title
+	title_charsize = 26				// Size of sound title
+	title_leftpadding = 0.035		// Left padding for text
+	slidevalue = 5					// Speed of slide effect
 }
 
 
@@ -17,27 +19,33 @@ class JukeboxArgs
 //******************************************************************************
 class Jukebox
 {
-	args = null; image = null; text = null
+	args = null; rectangle = null
+	image = null; title = null; number = null
 	paths = null; sounds = null
+	jukebox = null
 	sounditem = null; soundcount = 0; index = 0; playing = false
 	previoustick = 0
 
 
-	constructor(flw, _args, rectangle, textrectangle)
+	constructor(flw, _args, _rectangle)
 	{
 		args = _args
+		rectangle = _rectangle
 		
 		sounditem = fe.add_sound("")
 		sounditem.loop = false
 		
-		image = fe.add_image("backgrounds/jukebox.png", rectangle.x, rectangle.y, rectangle.width, rectangle.height)
-		image.visible = false
+		jukebox = fe.add_surface(_rectangle.width, _rectangle.height)
+		jukebox.x = _rectangle.x
+		jukebox.y = fe.layout.height
+		jukebox.visible = false
 		
-		text = fe.add_text("", textrectangle.x, textrectangle.y, textrectangle.width, textrectangle.height)
-		text.charsize = args.text_charsize * flw / 1920 // Calculated from HD screen
-		text.align = Align.Left
-		text.style = Style.Bold
-		text.visible = false
+		image = jukebox.add_image("backgrounds/jukebox.png", 0, 0, _rectangle.width, _rectangle.height)
+		
+		title = jukebox.add_text("", args.title_leftpadding, 0, _rectangle.width - args.title_leftpadding, _rectangle.height)
+		title.charsize = args.title_charsize
+		title.align = Align.Left
+		title.style = Style.Bold
 		
 		if (fe.nv.rawin("jukeboxplaying"))
 			playing = fe.nv.rawget("jukeboxplaying")
@@ -81,7 +89,7 @@ class Jukebox
 	
 		index = index == 0 ? soundcount - 1 : index - 1	
 		sounditem.file_name = paths[index]
-		text.msg = parseName(paths[index])
+		title.msg = parseName(paths[index])
 		
 		if (playing) sounditem.playing = playing
 	}
@@ -94,7 +102,7 @@ class Jukebox
 	
 		index = index == soundcount - 1 ? 0 : index + 1
 		sounditem.file_name = paths[index]
-		text.msg = parseName(paths[index])
+		title.msg = parseName(paths[index])
 		
 		if (playing) sounditem.playing = playing
 	}
@@ -112,10 +120,12 @@ class Jukebox
 		if (sounditem.file_name == "")
 		{
 			sounditem.file_name = paths[index]
-			text.msg = parseName(paths[index])
+			title.msg = parseName(paths[index])
 		}	
-	
+		
+		jukebox.visible = true
 		playing = true
+		
 		updatePlaying()
 	}
 
@@ -133,8 +143,6 @@ class Jukebox
 	function updatePlaying() 
 	{
 		sounditem.playing = playing
-		image.visible = playing
-		text.visible = playing
 		
 		fe.nv.rawset("jukeboxplaying", playing)
 	}
@@ -144,30 +152,55 @@ class Jukebox
 	{
 		if (soundcount == 0)
 			return
-
-		if (fe.get_input_state(args.input_stop_play))
-		{		
-			if (ttime > previoustick + args.input_delay)
-			{
-				if (playing) stop()
-				else play()	
-				previoustick = ttime
-			}
-		}
-		else if (fe.get_input_state(args.input_previous))
+			
+		if (playing)
 		{
-			if (ttime > previoustick + args.input_delay)
-			{
-				previous()
-				previoustick = ttime
-			}
-		}
-		else if (fe.get_input_state(args.input_next))
-		{
-			if (ttime > previoustick + args.input_delay)
-			{
+			if (!sounditem.playing)
 				next()
-				previoustick = ttime
+				
+			if (fe.get_input_state(args.input_stop_play))
+			{
+				if (ttime > previoustick + args.input_delay)
+				{
+					stop()
+					previoustick = ttime
+				}
+			}
+			else if (fe.get_input_state(args.input_previous))
+			{
+				if (ttime > previoustick + args.input_delay)
+				{
+					previous()
+					previoustick = ttime
+				}
+			}
+			else if (fe.get_input_state(args.input_next))
+			{
+				if (ttime > previoustick + args.input_delay)
+				{
+					next()
+					previoustick = ttime
+				}
+			}
+
+			if (jukebox.y > rectangle.y)
+				jukebox.y -= args.slidevalue
+		}
+		else
+		{
+			if (fe.get_input_state(args.input_stop_play))
+				if (ttime > previoustick + args.input_delay)
+				{
+					play()
+					previoustick = ttime
+				}
+		
+			if (jukebox.y < fe.layout.height)
+			{
+				jukebox.y += args.slidevalue
+				
+				if (jukebox.y >= fe.layout.height)
+					jukebox.visible = false
 			}
 		}
 	}
@@ -175,9 +208,7 @@ class Jukebox
 	
 	function reset(var) 
 	{
-		text.visible = false
-		image.visible = false
-	
+		title.msg = ""
 		sounditem.file_name = ""
 		sounditem.playing = false
 		soundcount = 0

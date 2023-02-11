@@ -13,6 +13,7 @@ class ImageGalleryArgs
 	widecodes = null		// Items matching these codes are considered wide
 	ignoredcodes = null		// Items matching these codes are ignored
 	space = 10				// Space between items
+	slidevalue = 100		// Speed of slide effect
 }
 
 
@@ -24,8 +25,9 @@ class ImageGallery
 	args = null 
 	rectangle = null
 	
-	paths = null 
 	images = null
+	paths = null 
+	gallery = null
 	lastswapindex = null
 	previousload = null
 	previousswap = null
@@ -37,6 +39,10 @@ class ImageGallery
 		rectangle = _rectangle
 		previousload = -1
 		previousswap = -1
+		
+		gallery = fe.add_surface(rectangle.width, rectangle.height)
+		gallery.x = gallery.x = fe.layout.width
+		gallery.y = rectangle.y
 	}
 
 
@@ -50,18 +56,18 @@ class ImageGallery
 			
 		getPaths(name)
 		if (paths.len() == 0) return
-			
+					
 		local width = isWide(name) ? args.itemwidthwide : 
 			isNarrow(name) ? args.itemwidthnarrow : args.itemwidth
 		local imgcount = (rectangle.width / (width + args.space)).tointeger()
 					
 		// Center the gallery inside the rectangle
-		local currentx = rectangle.x + (rectangle.width - (imgcount * width) - (args.space * (imgcount - 1))) / 2
+		local currentx = (rectangle.width - (imgcount * width) - (args.space * (imgcount - 1))) / 2
 
 		for (local i = 0; i < imgcount; i++)
 		{
 			// Create an image in the middle of item width
-			local img = ImageGalleryItem(getImagePath(), currentx, rectangle.y, width, rectangle.height)
+			local img = ImageGalleryItem(gallery, getImagePath(), currentx, 0, width, rectangle.height)
 		
 			images.append(img)
 			currentx += width + (i == imgcount - 1 ? 0 : args.space)
@@ -97,6 +103,7 @@ class ImageGallery
 	}
 	
 	
+	// Has a box with a wide format (ex. SNES) ?
 	function isWide(name)
 	{
 		if (args.widecodes != null)
@@ -108,6 +115,7 @@ class ImageGallery
 	}
 	
 	
+	// Has a box with a narrow format (ex. PSP) ?
 	function isNarrow(name)
 	{
 		if (args.narrowcodes != null)
@@ -119,7 +127,7 @@ class ImageGallery
 	}
 
 	
-	// Get a random image, but not one which is already displayed (if possible)
+	// Get a random image that is not already displayed (if possible)
 	function getImagePath()
 	{
 		local path = null
@@ -152,8 +160,13 @@ class ImageGallery
 		{
 			if (images == null || images.len() == 0)
 				return
-			
-			if (ttime > previousswap + args.swapdelay)
+				
+			// Slide gallery (right to left)
+			if (gallery.x > rectangle.x)
+				gallery.x -= args.slidevalue
+				
+			// Swap image (not the same as the last)
+			else if (ttime > previousswap + args.swapdelay)
 			{
 				local index = null
 				do {
@@ -166,8 +179,10 @@ class ImageGallery
 				
 				lastswapindex = index
 				previousswap = ttime
-			}		
+			}	
 		}
+		
+		// Wait for the load delay and init the gallery
 		else if (ttime > previousload + args.loaddelay)
 		{
 			previousload = 0
@@ -183,6 +198,7 @@ class ImageGallery
 			for (local i = 0; i < images.len(); i++) 
 				images[i].clear()
 				
+		gallery.x = fe.layout.width
 		previousload = ttime
 	}
 }
@@ -194,11 +210,12 @@ class ImageGallery
 //******************************************************************************
 class ImageGalleryItem
 {
-	path = null; x = null; y = null; width = null; height = null
+	parent = null; path = null; x = null; y = null; width = null; height = null
 	img = null
 
-	constructor(_path, _x, _y, _width, _height)
+	constructor(_parent, _path, _x, _y, _width, _height)
 	{
+		parent = _parent
 		path = _path
 		x = _x
 		y = _y
@@ -211,7 +228,7 @@ class ImageGalleryItem
 	// Fixed height, width is auto
 	function create()
 	{
-		img = PreserveImage(path, x, y, width, height) 		
+		img = PreserveImage(path, x, y, width, height, parent) 		
 		img.update()
 	}
 	

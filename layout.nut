@@ -16,8 +16,9 @@ fe.do_nut("wheel.nut");
 local flw = fe.layout.width;
 local flh = fe.layout.height;
 local current_ttime = 0
+local ignoredcodes = [ "arcade", "various", "serie", "genre" ]
 
-fe.layout.font = "lucon.ttf"
+fe.layout.font = "OpenSans-Bold.ttf"
 
 function resize(size)
 {
@@ -58,9 +59,113 @@ while (!file.eos())
 //******************************************************************************
 // Background + System
 //******************************************************************************
-
 local background = fe.add_image("", 0, 0, flw, flh)
-local system = PreserveImage("", flw * 0.32, flh * 0.087, flw * 0.68, flh * 0.65)
+
+
+function resetBackground(var)
+{
+	background.file_name = "backgrounds/" + fe.game_info(Info.Name, var) + ".png"
+}
+
+
+//******************************************************************************
+// Game count
+//******************************************************************************
+local gamecount = fe.add_text("", flw * 0.535, flh * 0.715, flw * 0.26, flh * 0.045)
+gamecount.align = Align.Centre
+gamecount.charsize = resize(30)
+gamecount.style = Style.Bold
+
+function resetGameCount(var)
+{
+	local count = 0
+	local system = fe.game_info(Info.Name, var)
+		
+	for (local i = 0; i < ignoredcodes.len(); i++)
+		if (ignoredcodes[i] == system || ignoredcodes[i] == fe.list.name)
+		{
+			gamecount.visible = false
+			return
+		}	
+	
+	foreach (game in gamelist)
+		if (game.extra == system)
+			count++
+
+	gamecount.msg = count + " JEUX DISPONIBLES"
+	gamecount.visible = true
+}
+
+
+
+//******************************************************************************
+// Image gallery
+//******************************************************************************
+local imgGalleryArgs = ImageGalleryArgs()
+imgGalleryArgs.basepath = "../../../Roms/%s/media/box"
+imgGalleryArgs.itemwidthnarrow = resize(150)
+imgGalleryArgs.itemwidth = resize(192)
+imgGalleryArgs.itemwidthwide = resize(230)
+imgGalleryArgs.narrowcodes = [ "saturn", "psp" ]
+imgGalleryArgs.widecodes = [ "snes", "n64" ]
+imgGalleryArgs.ignoredcodes = ignoredcodes
+imgGalleryArgs.space = resize(19)
+
+local imgGalleryRect = Rectangle(flw * 0.33, flh * 0.79, flw * 0.66, flh * 0.19)
+local imgGallery = ImageGallery(imgGalleryArgs, imgGalleryRect)
+
+
+//******************************************************************************
+// Arcade gallery
+//******************************************************************************
+local arcadeGalleryArgs = ArcadeGalleryArgs()
+arcadeGalleryArgs.manufacturercodepath = "arcade"
+arcadeGalleryArgs.imagepath = "../../../Roms/arcade/media/images/%s.png"
+arcadeGalleryArgs.wheelpath = "../../../Roms/arcade/media/wheel/%s.png"
+
+local arcadeGallery = ArcadeGallery(arcadeGalleryArgs, gamelist, flw, flh)
+
+
+
+//******************************************************************************
+// Jukebox
+//******************************************************************************
+local jukeboxargs = JukeboxArgs()
+jukeboxargs.basepath = "music/%s"
+jukeboxargs.title_charsize = resize(26)
+jukeboxargs.title_leftpadding = flw * 0.035
+
+local jukeboxRect = Rectangle(flw * 0.43, flh * 0.91, flw * 0.47, flh * 0.06)
+local jukebox = Jukebox(flw, jukeboxargs, jukeboxRect)
+
+
+//******************************************************************************
+// Wheel
+//******************************************************************************
+local imgratio = 0.5
+local imgpath = "platforms/[Name].png"
+
+local wheelimages = []
+wheelimages.push(WheelImage(0.100, -0.255,  0.18,  -9, 165)) 
+wheelimages.push(WheelImage(0.153,   0.13,  0.18,  -7, 190))   
+wheelimages.push(WheelImage(0.180,   0.31,  0.18,  -5, 215)) 
+wheelimages.push(WheelImage(0.193,    0.5, 0.215,   0, 255))
+wheelimages.push(WheelImage(0.188,   0.69,  0.18,   5, 215))
+wheelimages.push(WheelImage(0.164,   0.87,  0.18,   7, 190))
+wheelimages.push(WheelImage(0.100,  1.255,  0.18,   9, 165))
+
+local slots = [];
+for (local i=0;i<wheelimages.len();i++)
+	slots.push(WheelEntry(flw, flh, wheelimages, imgratio, imgpath))
+
+local conveyor = Conveyor();
+conveyor.set_slots(slots);
+conveyor.transition_ms = 200;
+
+//******************************************************************************
+// Background + System
+//******************************************************************************
+local system = PreserveImage("", flw * 0.32, flh * 0.07, flw * 0.68, flh * 0.65)
 local allSystemPaths = DirectoryListing("systems", false).results
 local currentSystemPaths
 local currentSystemIndex
@@ -74,10 +179,7 @@ function resetSystem(var)
 	currentSystemPaths = []
 	system.file_name = ""
 	
-	local name = fe.game_info(Info.Name, var)
-	background.file_name = "backgrounds/" + name + ".png"
-
-	getSystemPaths(name)
+	getSystemPaths(fe.game_info(Info.Name, var))
 	
 	if (currentSystemPaths.len() != 0)
 	{
@@ -128,93 +230,6 @@ function swapSystem(ttime)
 
 
 //******************************************************************************
-// Overview
-//******************************************************************************
-local text = fe.add_text("[Overview]", flw * 0.5, flh * 0.02, flw * 0.495, flh * 0.15)
-text.align = Align.Right
-text.charsize  = resize(18)
-text.word_wrap = true
-
-
-//******************************************************************************
-// Image gallery
-//******************************************************************************
-local imgGalleryArgs = ImageGalleryArgs()
-imgGalleryArgs.basepath = "../../../Roms/%s/media/box"
-imgGalleryArgs.itemwidthnarrow = resize(150)
-imgGalleryArgs.itemwidth = resize(192)
-imgGalleryArgs.itemwidthwide = resize(230)
-imgGalleryArgs.narrowcodes = [ "saturn", "psp" ]
-imgGalleryArgs.widecodes = [ "snes", "n64" ]
-imgGalleryArgs.ignoredcodes = [ "arcade", "various" ]
-imgGalleryArgs.space = resize(19)
-
-local imgGalleryRect = Rectangle(flw * 0.33, flh * 0.77, flw * 0.66, flh * 0.2)
-local imgGallery = ImageGallery(imgGalleryArgs, imgGalleryRect)
-
-
-//******************************************************************************
-// Arcade gallery
-//******************************************************************************
-local arcadeGalleryArgs = ArcadeGalleryArgs()
-arcadeGalleryArgs.manufacturercodepath = "arcade"
-arcadeGalleryArgs.imagepath = "../../../Roms/arcade/media/images/%s.png"
-arcadeGalleryArgs.wheelpath = "../../../Roms/arcade/media/wheel/%s.png"
-
-local logorect = Rectangle(flw * 0.007, flh * 0.65, flw * 0.17, flh * 0.072)
-
-local wheelrects = []
-wheelrects.append(Rectangle(flw * 0.3735, flh * 0.02, flw * 0.266, flh * 0.12))
-wheelrects.append(Rectangle(flw * 0.6905, flh * 0.02, flw * 0.266, flh * 0.12))
-wheelrects.append(Rectangle(flw * 0.3735, flh * 0.86, flw * 0.266, flh * 0.12))
-wheelrects.append(Rectangle(flw * 0.6905, flh * 0.86, flw * 0.266, flh * 0.12))
-
-local imagerects = []
-imagerects.append(Rectangle(flw * 0.3735, flh * 0.104, flw * 0.266, flh * 0.353))
-imagerects.append(Rectangle(flw * 0.6905, flh * 0.104, flw * 0.266, flh * 0.353))
-imagerects.append(Rectangle(flw * 0.3735, flh * 0.543, flw * 0.266, flh * 0.353))
-imagerects.append(Rectangle(flw * 0.6905, flh * 0.543, flw * 0.266, flh * 0.353))
-
-local arcadeGallery = ArcadeGallery(arcadeGalleryArgs, gamelist, logorect, wheelrects, imagerects)
-
-
-
-//******************************************************************************
-// Jukebox
-//******************************************************************************
-local jukeboxargs = JukeboxArgs()
-jukeboxargs.basepath = "music/%s"
-
-local jukeboxRect = Rectangle(flw * 0.43, flh * 0.02, flw * 0.47, flh * 0.05)
-local jukeboxTextRect = Rectangle(flw * 0.47, flh * 0.02, flw * 0.395, flh * 0.045)
-local jukebox = Jukebox(flw, jukeboxargs, jukeboxRect, jukeboxTextRect)
-
-
-//******************************************************************************
-// Wheel
-//******************************************************************************
-local imgratio = 0.5
-local imgpath = "platforms/[Name].png"
-
-local wheelimages = []
-wheelimages.push(WheelImage(0.100, -0.255,  0.18,  -9, 165)) 
-wheelimages.push(WheelImage(0.153,   0.13,  0.18,  -7, 190))   
-wheelimages.push(WheelImage(0.180,   0.31,  0.18,  -5, 215)) 
-wheelimages.push(WheelImage(0.193,    0.5, 0.215,   0, 255))
-wheelimages.push(WheelImage(0.188,   0.69,  0.18,   5, 215))
-wheelimages.push(WheelImage(0.164,   0.87,  0.18,   7, 190))
-wheelimages.push(WheelImage(0.100,  1.255,  0.18,   9, 165))
-
-local slots = [];
-for (local i=0;i<wheelimages.len();i++)
-	slots.push(WheelEntry(flw, flh, wheelimages, imgratio, imgpath))
-
-local conveyor = Conveyor();
-conveyor.set_slots(slots);
-conveyor.transition_ms = 200;
-
-
-//******************************************************************************
 // Callbacks
 //******************************************************************************
 
@@ -233,15 +248,19 @@ function transition_callback(ttype, var, ttime)
 	switch(ttype) 
 	{
 		case Transition.ToNewList:
-			resetSystem(var)
+			resetBackground(var)
+			resetGameCount(var)
 			jukebox.reset(var)
+			resetSystem(var)
 			break
 	
 		case Transition.ToNewSelection:	
-			resetSystem(var)
+			resetBackground(var)
+			resetGameCount(var)
+			jukebox.reset(var)
 			imgGallery.reset(current_ttime)
 			arcadeGallery.reset(current_ttime)
-			jukebox.reset(var)
+			resetSystem(var)
 			break
 	}
 }
