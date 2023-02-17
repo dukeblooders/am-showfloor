@@ -3,14 +3,63 @@
 //******************************************************************************
 class JukeboxArgs
 {
-	basepath = ""					// Use %s for current system/game
-	input_previous = "custom1"		// Previous sound
-	input_next = "custom2"			// Next sound
-	input_stop_play = "custom3"		// Stop/Play sound
-	input_delay = 200				// Delay between inputs
-	title_charsize = 26				// Size of sound title
-	title_leftpadding = 0.035		// Left padding for text
-	slidevalue = 5					// Speed of slide effect
+	inputDelay = 0
+	input_next = null
+	input_playStop = null
+	input_previous = null
+	imagePath = null
+	jukeboxTransitionFactor = null
+	soundExtension = null
+	soundPath = null
+	persistentValue = "jukeboxplaying"
+	rect = null
+	imagePath = null
+	image = null
+	text = null
+	
+	
+	constructor(_soundPath, _soundExtension, _x, _y, _width, _height, _input_playStop, _inputDelay)
+	{
+		soundPath = _soundPath
+		soundExtension = _soundExtension
+		rect = Rectangle(_x, _y, _width, _height)
+		input_playStop = _input_playStop
+		inputDelay = _inputDelay
+	}
+	
+	
+	function WithBackgroundImage(_imagePath, _image)	// Inner rectangle values!
+	{
+		imagePath = _imagePath
+		image = _image
+		
+		return this
+	}
+	
+	
+	function WithInputPreviousNext(_input_previous, _input_next)
+	{
+		input_previous = _input_previous
+		input_next = _input_next
+		
+		return this
+	}
+	
+	
+	function WithText(_text)	// Inner rectangle values!
+	{
+		text = _text
+		
+		return this
+	}
+	
+	
+	function WithTransition(_jukeboxTransitionFactor)
+	{
+		jukeboxTransitionFactor = fe.layout.width * _jukeboxTransitionFactor
+		
+		return this
+	}
 }
 
 
@@ -19,201 +68,221 @@ class JukeboxArgs
 //******************************************************************************
 class Jukebox
 {
-	args = null; rectangle = null
-	image = null; title = null; number = null
-	paths = null; sounds = null
+	args = null
 	jukebox = null
-	sounditem = null; soundcount = 0; index = 0; playing = false
-	previoustick = 0
+	playing = null
+	previousTick = 0
+	text = null
+	sound = null
+	soundIndex = 0
+	soundPaths = null
+	soundCount = null
 
 
-	constructor(flw, _args, _rectangle)
+	constructor(_args)
 	{
 		args = _args
-		rectangle = _rectangle
 		
-		sounditem = fe.add_sound("")
-		sounditem.loop = false
+		sound = fe.add_sound("")
+		sound.loop = false
 		
-		jukebox = fe.add_surface(_rectangle.width, _rectangle.height)
-		jukebox.x = _rectangle.x
+		jukebox = fe.add_surface(args.rect.width, args.rect.height)
+		jukebox.x = args.rect.x
 		jukebox.y = fe.layout.height
 		jukebox.visible = false
 		
-		image = jukebox.add_image("backgrounds/jukebox.png", 0, 0, _rectangle.width, _rectangle.height)
+		if (args.image != null)
+			args.image.Create(args.imagePath == null ? "" : args.imagePath, jukebox)
 		
-		title = jukebox.add_text("", args.title_leftpadding, 0, _rectangle.width - args.title_leftpadding, _rectangle.height)
-		title.charsize = args.title_charsize
-		title.align = Align.Left
-		title.style = Style.Bold
-		
-		if (fe.nv.rawin("jukeboxplaying"))
-			playing = fe.nv.rawget("jukeboxplaying")
-	}
+		if (args.text != null)
+			args.text.Create("", jukebox)
 
-
-	function init(var) 
-	{
-		sounds = []
-					
-		getPaths(fe.game_info(Info.Name, var))
-		
-		if (soundcount != 0)
-			if (playing) 
-				play()
+		if (fe.nv.rawin(args.persistentValue))
+			playing = fe.nv.rawget(args.persistentValue)
 	}
 	
 	
-	function getPaths(name)
+	function Reload(_var)
 	{
-		local pathlist = DirectoryListing(format(args.basepath, name)).results
+		soundPaths = []
 	
-		paths = []
-		for (local i=0; i<pathlist.len(); i++ )
+		GetPaths(fe.game_info(Info.Name, _var))
+		
+		if (soundPaths.len() != 0)
+			if (playing)
+				Play()
+	}
+	
+	
+	function GetPaths(name)
+	{
+		local paths = DirectoryListing(args.soundPath + "/" + name).results
+	
+		foreach	(path in paths)
 		{
-			local r = regexp(".mp3")
-			local t = r.capture(pathlist[i])
+			local regex = regexp(args.soundExtension)
 			
-			if (t != null)
-				paths.push(pathlist[i])
+			if (regex.capture(path) != null)
+				soundPaths.push(path)
 		}
-		
-		soundcount = paths.len()
 	}
 	
 	
-	function previous() 
+	function Play() 
 	{
-		if (soundcount == 1)
-			return;
-	
-		index = index == 0 ? soundcount - 1 : index - 1	
-		sounditem.file_name = paths[index]
-		title.msg = parseName(paths[index])
-		
-		if (playing) sounditem.playing = playing
-	}
-	
-	
-	function next() 
-	{
-		if (soundcount == 1)
-			return;
-	
-		index = index == soundcount - 1 ? 0 : index + 1
-		sounditem.file_name = paths[index]
-		title.msg = parseName(paths[index])
-		
-		if (playing) sounditem.playing = playing
-	}
-	
-
-	function stop() 
-	{
-		playing = false
-		updatePlaying()
-	}
-	
-	
-	function play() 
-	{
-		if (sounditem.file_name == "")
+		if (sound.file_name == "")
 		{
-			sounditem.file_name = paths[index]
-			title.msg = parseName(paths[index])
+			sound.file_name = soundPaths[soundIndex]
+			if (args.text != null)
+				args.text.SetMessage(ParseName(soundPaths[soundIndex]))
 		}	
-		
+				
 		jukebox.visible = true
 		playing = true
 		
-		updatePlaying()
+		UpdatePlaying()
+		
+		if (args.jukeboxTransitionFactor == null)									
+			jukebox.y = args.rect.y
+	}
+	
+	
+	function Stop() 
+	{
+		if (args.jukeboxTransitionFactor == null)
+			jukebox.visible = false
+	
+		playing = false
+		UpdatePlaying()
+	}
+	
+	
+	function Previous() 
+	{
+		if (soundPaths.len() == 1)
+			return;
+	
+		soundIndex = soundIndex == 0 ? soundPaths.len - 1 : soundIndex - 1	
+		sound.file_name = soundPaths[soundIndex]
+		
+		if (args.text != null)
+			args.text.SetMessage(ParseName(soundPaths[soundIndex]))
+		
+		if (playing) 
+			sound.playing = playing
+	}
+	
+	
+	function Next() 
+	{
+		if (soundPaths.len() == 1)
+			return;
+	
+		soundIndex = soundIndex == soundPaths.len() - 1 ? 0 : soundIndex + 1
+		sound.file_name = soundPaths[soundIndex]
+		
+		if (args.text != null)
+			args.text.SetMessage(ParseName(soundPaths[soundIndex]))
+			
+		if (playing) 
+			sound.playing = playing
+	}
+	
+	
+	function ParseName(_name) 
+	{
+		local values = split(_name, "/")
+		local name = values[values.len() - 1]
+	
+		return name.slice(0, name.len() - args.soundExtension.len())
+	}
+	
+	
+	function UpdatePlaying() 
+	{
+		sound.playing = playing
+		
+		fe.nv.rawset(args.persistentValue, playing)
+	}
+	
+
+	function Clear()
+	{
+		sound.file_name = ""
+		sound.playing = false
+		soundIndex = 0
+	
+		if (args.text != null)
+			args.text.SetMessage("")
 	}
 
-	
-	function parseName(name) 
+
+	function Update(_ttime)
 	{
-		local values = split(name, "/")
-	
-		name = values[values.len() - 1]
-	
-		return name.slice(0, name.len() - 4)
-	}
-	
-	
-	function updatePlaying() 
-	{
-		sounditem.playing = playing
-		
-		fe.nv.rawset("jukeboxplaying", playing)
-	}
-	
-	
-	function swap(ttime) 
-	{
-		if (soundcount == 0)
-			return
+		if (soundPaths.len() == 0)
+			return			
 			
 		if (playing)
 		{
-			if (!sounditem.playing)
-				next()
+			if (!sound.playing)
+				Next()
 				
-			if (fe.get_input_state(args.input_stop_play))
+			if (fe.get_input_state(args.input_playStop))
 			{
-				if (ttime > previoustick + args.input_delay)
+				if (_ttime > previousTick + args.inputDelay)
 				{
-					stop()
-					previoustick = ttime
+					Stop()
+					previousTick = _ttime
 				}
 			}
 			else if (fe.get_input_state(args.input_previous))
 			{
-				if (ttime > previoustick + args.input_delay)
+				if (_ttime > previousTick + args.inputDelay)
 				{
-					previous()
-					previoustick = ttime
+					Previous()
+					previousTick = _ttime
 				}
 			}
 			else if (fe.get_input_state(args.input_next))
 			{
-				if (ttime > previoustick + args.input_delay)
+				if (_ttime > previousTick + args.inputDelay)
 				{
-					next()
-					previoustick = ttime
+					Next()
+					previousTick = _ttime
 				}
 			}
 
-			if (jukebox.y > rectangle.y)
-				jukebox.y -= args.slidevalue
+			// Jukebox transition
+			if (args.jukeboxTransitionFactor != null)
+				if (jukebox.y > args.rect.y)
+					jukebox.y = jukebox.y - args.jukeboxTransitionFactor < args.rect.y ? args.rect.y : jukebox.y - args.jukeboxTransitionFactor
 		}
 		else
 		{
-			if (fe.get_input_state(args.input_stop_play))
-				if (ttime > previoustick + args.input_delay)
+			if (fe.get_input_state(args.input_playStop))					
+				if (_ttime > previousTick + args.inputDelay)
 				{
-					play()
-					previoustick = ttime
+					Play()
+					previousTick = _ttime
 				}
 		
-			if (jukebox.y < fe.layout.height)
-			{
-				jukebox.y += args.slidevalue
-				
-				if (jukebox.y >= fe.layout.height)
-					jukebox.visible = false
-			}
+			// Jukebox transition
+			if (args.jukeboxTransitionFactor != null)	
+				if (jukebox.y < fe.layout.height)
+				{
+					jukebox.y = jukebox.y + args.jukeboxTransitionFactor > fe.layout.height ? fe.layout.height : jukebox.y + args.jukeboxTransitionFactor
+					
+					if (jukebox.y == fe.layout.height)
+						jukebox.visible = false
+				}
 		}
 	}
 	
 	
-	function reset(var) 
+	function Reset(_var)
 	{
-		title.msg = ""
-		sounditem.file_name = ""
-		sounditem.playing = false
-		soundcount = 0
-		index = 0
+		Clear()
 		
-		init(var)
+		Reload(_var)
 	}
 }
