@@ -56,7 +56,7 @@ class JukeboxArgs
 	
 	function WithTransition(_jukeboxTransitionFactor)
 	{
-		jukeboxTransitionFactor = fe.layout.width * _jukeboxTransitionFactor
+		jukeboxTransitionFactor = _jukeboxTransitionFactor / 100.0
 		
 		return this
 	}
@@ -162,7 +162,7 @@ class Jukebox
 		if (soundPaths.len() == 1)
 			return;
 	
-		soundIndex = soundIndex == 0 ? soundPaths.len - 1 : soundIndex - 1	
+		soundIndex = soundIndex == 0 ? soundPaths.len() - 1 : soundIndex - 1	
 		sound.file_name = soundPaths[soundIndex]
 		
 		if (args.text != null)
@@ -255,7 +255,11 @@ class Jukebox
 			// Jukebox transition
 			if (args.jukeboxTransitionFactor != null)
 				if (jukebox.y > args.rect.y)
-					jukebox.y = jukebox.y - args.jukeboxTransitionFactor < args.rect.y ? args.rect.y : jukebox.y - args.jukeboxTransitionFactor
+				{
+					local diff = (fe.layout.height - args.rect.y) * args.jukeboxTransitionFactor
+
+					jukebox.y = jukebox.y - diff < args.rect.y ? args.rect.y : jukebox.y - diff
+				}
 		}
 		else
 		{
@@ -270,7 +274,9 @@ class Jukebox
 			if (args.jukeboxTransitionFactor != null)	
 				if (jukebox.y < fe.layout.height)
 				{
-					jukebox.y = jukebox.y + args.jukeboxTransitionFactor > fe.layout.height ? fe.layout.height : jukebox.y + args.jukeboxTransitionFactor
+					local diff = (fe.layout.height - args.rect.y) * args.jukeboxTransitionFactor
+				
+					jukebox.y = jukebox.y + diff > fe.layout.height ? fe.layout.height : jukebox.y + diff
 					
 					if (jukebox.y == fe.layout.height)
 						jukebox.visible = false

@@ -16,10 +16,10 @@ fe.do_nut("wheel.nut")
 // Settings
 //******************************************************************************
 local arcadeGallery_args = ManufacturerGalleryArgs("./arcade", [ "arcade" ])
-	.WithManufacturerImage(
+	.WithManufacturerImage(5,
 		Image(0.007, 0.65, 0.17, 0.072, true)
 			.WithRotation(-90))
-	.WithWheelImages("../../../Roms/arcade/media/wheel", [ 
+	.WithWheelImages("../../../Roms/arcade/media/wheel", 8, [ 
 		Image(0.370, 0.333, 0.12, 0.062, true)	// Left cab
 			.WithPinch(0, -7)
 			.WithSkew(-9, -5)
@@ -32,7 +32,7 @@ local arcadeGallery_args = ManufacturerGalleryArgs("./arcade", [ "arcade" ])
 			.WithPinch(0, -12)
 			.WithSkew(-13, 0)
 			.WithRotation(-8)])
-	.WithGameImages("../../../Roms/arcade/media/images", [ 
+	.WithGameImages("../../../Roms/arcade/media/images", 8, [ 
 		Image(0.394, 0.46, 0.1065, 0.174, true)	// Left cab
 			.WithPinch(-3, -15)
 			.WithSkew(-29, 7)
@@ -68,7 +68,7 @@ local imageSeparator = 95						// Multiple images for a game (95 = '_'): name.pn
 local jukebox_args = JukeboxArgs("./music", ".mp3", 0.43, 0.91, 0.47, 0.06, "custom3", 300)
 	.WithBackgroundImage("./backgrounds/jukebox.png", Image(0, 0, 0.47, 0.06, true))		// Inner rectangle values
 	.WithInputPreviousNext("custom1", "custom2")
-	.WithTransition(0.003)
+	.WithTransition(8)
 	.WithText(Text(0.04, 0, 0.43, 0.06)														// Inner rectangle values
 		.WithAlign(Align.Left)
 		.WithCharSize(26)
@@ -80,8 +80,8 @@ local systemGallery_args = SystemGalleryArguments(0.32, 0.785, 0.68, 0.20, "../.
 	.WithSystemCodes_Ignored([ "arcade", "various", "serie", "genre" ])
 	.WithSystemCodes_Narrow([ "saturn", "psp" ], 0.08)
 	.WithSystemCodes_Wide([ "snes", "n64" ], 0.12)
-	.WithImageTransition(0.005)
-	.WithGalleryTransition(0.05)
+	.WithImageTransition(5)
+	.WithGalleryTransition(7)
 	.WithLoadDelay(500)
 	.WithSwapDelay(1750)
 local wheel_args = WheelArgs("./platforms/[Name]", [

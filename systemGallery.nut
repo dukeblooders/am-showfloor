@@ -29,14 +29,14 @@ class SystemGalleryArguments
 	
 	function WithGalleryTransition(_galleryTransitionFactor)
 	{
-		galleryTransitionFactor = fe.layout.width * _galleryTransitionFactor
+		galleryTransitionFactor = _galleryTransitionFactor / 100.0
 		
 		return this
 	}
 		
 	function WithImageTransition(_imageTransitionFactor)
 	{
-		imageTransitionFactor = fe.layout.width * _imageTransitionFactor
+		imageTransitionFactor = _imageTransitionFactor / 100.0
 		
 		return this
 	}
@@ -190,74 +190,94 @@ class SystemGallery
 	{
 		switch (swapping)
 		{
-			case 1:		// Reduce
-				local layoutImage = images[swappingIndex].GetLayoutImage();
-			
-				if (layoutImage.width > 0)
-				{
-					if (layoutImage.width - args.imageTransitionFactor > 0)
-					{
-						layoutImage.width = layoutImage.width - args.imageTransitionFactor
-						layoutImage.x = images[swappingIndex].rect.x + images[swappingIndex].rect.width / 2 - layoutImage.width / 2
-					}
-					else
-					{
-						layoutImage.width = 0
-						layoutImage.x = images[swappingIndex].rect.x
-						layoutImage.visible = false
-					}
-				}
-				else if (layoutImage.width == 0)
-				{				
-					layoutImage.width = images[swappingIndex].rect.width
-					images[swappingIndex].SetName(GetImagePath())
-					layoutImage.width = 0
-					
-					swapping = -1
-				}
+			case 0:
+				SwapImage_Init(_ttime)
 				break
-			
 		
-			case -1: 	// Increase
-				local layoutImage = images[swappingIndex].GetLayoutImage();
-			
-				if (layoutImage.width + args.imageTransitionFactor < images[swappingIndex].rect.width)
-				{
-					layoutImage.visible = true
-				
-					layoutImage.width = layoutImage.width + args.imageTransitionFactor
-					layoutImage.x =  images[swappingIndex].rect.x + images[swappingIndex].rect.width / 2 - layoutImage.width / 2
-				}
-				else
-				{
-					layoutImage.width = images[swappingIndex].rect.width 
-					layoutImage.x = images[swappingIndex].rect.x
-					swapping = 0
-					previousSwap = _ttime
-				}			
+			case -1:
+				SwapImage_Shrink()
 				break
 			
-				
-			case 0:		// Disabled
-				local index = null
-				do {
-					index = rand() % images.len()
-				} while (index == swappingIndex)	
-				
-				swappingIndex = index
-				
-				if (args.imageTransitionFactor == null)
-				{
-					images[swappingIndex].Visible(false)
-					images[swappingIndex].Create(GetImagePath(), gallery)
-					
-					previousSwap = _ttime
-				}
-				else
-				{
-					swapping = 1
-				}
+			case 1: 
+				SwapImage_Enlarge(_ttime)		
 				break
+		}
+	}
+
+
+	function SwapImage_Init(_ttime)
+	{
+		local index = null
+		do {
+			index = rand() % images.len()
+		} while (index == swappingIndex)	
+		
+		swappingIndex = index
+		
+		if (args.imageTransitionFactor == null)
+		{
+			images[swappingIndex].Visible(false)
+			images[swappingIndex].Create(GetImagePath(), gallery)
+			
+			previousSwap = _ttime
+		}
+		else
+		{
+			swapping = -1
+		}
+	}
+
+
+	function SwapImage_Shrink()
+	{
+		local layoutImage = images[swappingIndex].GetLayoutImage();
+	
+		if (layoutImage.width > 0)
+		{
+			local diff = images[swappingIndex].rect.width * args.imageTransitionFactor
+		
+			if (layoutImage.width - diff > 0)
+			{
+				layoutImage.width = layoutImage.width - diff
+				layoutImage.x = images[swappingIndex].rect.x + images[swappingIndex].rect.width / 2 - layoutImage.width / 2
+			}
+			else
+			{
+				layoutImage.width = 0
+				layoutImage.x = images[swappingIndex].rect.x
+				layoutImage.visible = false
+			}
+		}
+		else if (layoutImage.width == 0)
+		{				
+			layoutImage.width = images[swappingIndex].rect.width
+			images[swappingIndex].SetName(GetImagePath())
+			layoutImage.width = 0
+			
+			swapping = 1
+		}
+	}
+
+
+	function SwapImage_Enlarge(_ttime)
+	{
+		local layoutImage = images[swappingIndex].GetLayoutImage();
+		local diff = images[swappingIndex].rect.width * args.imageTransitionFactor
+			
+		if (layoutImage.width + diff < images[swappingIndex].rect.width)
+		{
+			layoutImage.visible = true
+		
+			layoutImage.width += diff
+			layoutImage.x =  images[swappingIndex].rect.x + images[swappingIndex].rect.width / 2 - layoutImage.width / 2
+		}
+		else
+		{
+			layoutImage.width = images[swappingIndex].rect.width 
+			layoutImage.x = images[swappingIndex].rect.x
+			
+			swapping = 0
+			previousSwap = _ttime
 		}
 	}
 
@@ -289,7 +309,11 @@ class SystemGallery
 			if (args.galleryTransitionFactor == null)
 				gallery.x = args.rect.x
 			else if (gallery.x > args.rect.x)
-				gallery.x = gallery.x - args.galleryTransitionFactor < args.rect.x ? args.rect.x : gallery.x - args.galleryTransitionFactor
+			{
+				local diff = (fe.layout.width - args.rect.x) * args.galleryTransitionFactor
+				
+				gallery.x = gallery.x - diff < args.rect.x ? args.rect.x : gallery.x - diff
+			}
 			
 			// Swap image
 			else if (args.swapDelay != 0 && _ttime > previousSwap + args.swapDelay)
