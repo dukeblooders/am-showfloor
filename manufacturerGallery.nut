@@ -202,71 +202,69 @@ class ManufacturerGallery
 				gameImage.Visible(false)
 				
 		currentManufacturer = null
+		swapping = 0
 	}
 	
 	
 	// Swap manufacturer
 	function SwapManufacturer(_ttime)
 	{	
-		switch (swapping)
+		if (args.systemCodes.find(fe.game_info(Info.Name)) == null)
 		{
-			case 0:
-				if (args.systemCodes.find(fe.game_info(Info.Name)) == null)
-				{
-					Clear()
-					previousLoad = 0
-				}
-				else
-				{
-					currentManufacturer = GetNextManufacturer()
-					manufacturerGames = GetManufacturerGames()
-				
+			Clear()
+			previousLoad = 0
+		}
+		else
+		{
+			switch (swapping)
+			{
+				case 0:
 					if (SwapManufacturerImage_Out())
 						swapping = -1
-				}
-				break
-						
-			case -1:
-				local done = true
-			
-				if (args.wheelImages != null)
-					foreach (index, wheelImage in args.wheelImages)
-						if (!SwapImage_Shrink(index, wheelImage, args.wheelPath, args.wheelTransitionFactor))
-							done = false
-						
-				if (args.gameImages != null)
-					foreach (index, gameImage in args.gameImages)
-						if (!SwapImage_Shrink(index, gameImage, args.gamePath, args.gameTransitionFactor))
-							done = false
-
-				if (done) swapping = 1
-				break
+					break
+							
+				case -1:
+					local done = true
 				
-			case 1:
-				if (SwapManufacturerImage_In())
-					swapping = 2
-				break
-			
-			case 2:
-				local done = true
-			
-				if (args.wheelImages != null)
-					foreach (index, wheelImage in args.wheelImages)
-						if (!SwapImage_Enlarge(index, wheelImage, args.wheelPath, args.wheelTransitionFactor))
-							done = false
-						
-				if (args.gameImages != null)
-					foreach (index, gameImage in args.gameImages)
-						if (!SwapImage_Enlarge(index, gameImage, args.gamePath, args.gameTransitionFactor))
-							done = false
+					if (args.wheelImages != null)
+						foreach (index, wheelImage in args.wheelImages)
+							if (!SwapImage_Shrink(index, wheelImage, args.wheelPath, args.wheelTransitionFactor))
+								done = false
+							
+					if (args.gameImages != null)
+						foreach (index, gameImage in args.gameImages)
+							if (!SwapImage_Shrink(index, gameImage, args.gamePath, args.gameTransitionFactor))
+								done = false
 
-				if (done)
-				{
-					swapping = 0
-					previousLoad = 0
-					previousSwap = _ttime
-				}
-				break
+					if (done) swapping = 1
+					break
+					
+				case 1:
+					if (SwapManufacturerImage_In())
+						swapping = 2
+					break
+				
+				case 2:
+					local done = true
+				
+					if (args.wheelImages != null)
+						foreach (index, wheelImage in args.wheelImages)
+							if (!SwapImage_Enlarge(index, wheelImage, args.wheelPath, args.wheelTransitionFactor))
+								done = false
+							
+					if (args.gameImages != null)
+						foreach (index, gameImage in args.gameImages)
+							if (!SwapImage_Enlarge(index, gameImage, args.gamePath, args.gameTransitionFactor))
+								done = false
+
+					if (done)
+					{
+						swapping = 0
+						previousLoad = 0
+						previousSwap = _ttime
+					}
+					break
+			}
 		}
 	}
 	
@@ -296,6 +294,9 @@ class ManufacturerGallery
 				}
 			}
 		}
+		
+		currentManufacturer = GetNextManufacturer()
+		manufacturerGames = GetManufacturerGames()
 		
 		args.manufacturerImage.SetName(args.manufacturerPath + "/" + currentManufacturer + imageExtension)
 		args.manufacturerImage.Visible(true)
