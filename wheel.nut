@@ -106,10 +106,10 @@ class WheelSlot extends ConveyorSlot
 	
 	function GetAlpha(_index, _progress)
 	{
-		local a1 = args.wheelImages[_index].rect.width
+		local a1 = args.wheelImages[_index].alpha
 	
 		if (_progress == 0 || _index != maxImageIndex / 2) // Don't apply on the middle object when moving
-			return args.wheelImages[_index].alpha
+			return a1
 		else 
 			return _index == maxImageIndex ? a1 : args.wheelImages[_index + 1].alpha
 	}

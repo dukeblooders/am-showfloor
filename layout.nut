@@ -15,47 +15,49 @@ fe.do_nut("wheel.nut")
 //******************************************************************************
 // Settings
 //******************************************************************************
+local baseWidth = 1920							// Calculated from HD screen
+local imageExtension = ".png"
+
 local arcadeGallery_args = ManufacturerGalleryArgs("./arcade", [ "arcade" ])
 	.WithManufacturerImage(5,
 		Image(0.007, 0.65, 0.17, 0.072, true)
 			.WithRotation(-90))
 	.WithWheelImages("../../../Roms/arcade/media/wheel", 8, [ 
 		Image(0.370, 0.333, 0.12, 0.062, true)	// Left cab
-			.WithPinch(0, -7)
-			.WithSkew(-9, -5)
+			.WithPinch(0, -7, baseWidth)
+			.WithSkew(-9, -5, baseWidth)
 			.WithRotation(-8),
 		Image(0.535, 0.26, 0.158, 0.076, true)	// Middle cab
-			.WithPinch(0, -10)
-			.WithSkew(-11, -2)
+			.WithPinch(0, -10, baseWidth)
+			.WithSkew(-11, -2, baseWidth)
 			.WithRotation(-8),
 		Image(0.751, 0.169, 0.21, 0.096, true)	// Right cab
-			.WithPinch(0, -12)
-			.WithSkew(-13, 0)
+			.WithPinch(0, -12, baseWidth)
+			.WithSkew(-13, 0, baseWidth)
 			.WithRotation(-8)])
 	.WithGameImages("../../../Roms/arcade/media/images", 8, [ 
 		Image(0.394, 0.46, 0.1065, 0.174, true)	// Left cab
-			.WithPinch(-3, -15)
-			.WithSkew(-29, 7)
+			.WithPinch(-3, -15, baseWidth)
+			.WithSkew(-29, 7, baseWidth)
 			.WithRotation(-2.2),
 		Image(0.567, 0.42, 0.14, 0.213, true)	// Middle cab
-			.WithPinch(-2, -20)
-			.WithSkew(-37, 7)
+			.WithPinch(-2, -20, baseWidth)
+			.WithSkew(-37, 7, baseWidth)
 			.WithRotation(-1.8),
 		Image(0.794, 0.366, 0.185, 0.266, true)	// Right cab
-			.WithPinch(-5, -22)
-			.WithSkew(-45, 9)
+			.WithPinch(-5, -22, baseWidth)
+			.WithSkew(-45, 9, baseWidth)
 			.WithRotation(-1.4)])	
 	.WithLoadDelay(300)
 	.WithSwapDelay(7000)	
 local backgroundImage = Image(0, 0, 1, 1, false)
 local backgroundImage_path = "./backgrounds"
-local baseWidth = 1920							// Calculated from HD screen
 local font_path = "OpenSans-Bold.ttf"
 local gameCountText_displayMsg = "%s JEUX DISPONIBLES"
 local gameCountText_ignoredSystemCodes = [ "arcade", "various", "serie", "genre" ]
 local gameCountText = Text(0.535, 0.715, 0.26, 0.045)
 	.WithAlign(Align.Centre)
-	.WithCharSize(30)
+	.WithCharSize(30, baseWidth)
 	.WithStyle(Style.Bold)
 local gameList_columnCount = 21
 local gameList_columnIndex_name = 0
@@ -63,15 +65,14 @@ local gameList_columnIndex_manufacturer = 5		// For the arcade gallery
 local gameList_columnIndex_extra = 15			// 'Extra' is used instead of 'emulator' to regroup some systems
 local gameList_columnSeparator = ";"
 local gameList_path = "./romlists/All.txt"
-local imageExtension = ".png"
 local imageSeparator = 95						// Multiple images for a game (95 = '_'): name.png, name_2.png, name_3.png
 local jukebox_args = JukeboxArgs("./music", ".mp3", 0.43, 0.91, 0.47, 0.06, "custom3", 300)
-	.WithBackgroundImage("./backgrounds/jukebox.png", Image(0, 0, 0.47, 0.06, true))		// Inner rectangle values
+	.WithBackgroundImage("./backgrounds/jukebox" + imageExtension, Image(0, 0, 0.47, 0.06, true))		// Inner rectangle values
 	.WithInputPreviousNext("custom1", "custom2")
 	.WithTransition(8)
 	.WithText(Text(0.04, 0, 0.43, 0.06)														// Inner rectangle values
 		.WithAlign(Align.Left)
-		.WithCharSize(26)
+		.WithCharSize(26, baseWidth)
 		.WithStyle(Style.Bold))
 local systemImage = Image(0.32, 0.07, 0.68, 0.65, true)
 local systemImage_path = "./systems"
@@ -279,6 +280,7 @@ InitGameList()
 
 backgroundImage.Create("")
 InitWheel()
+fe.layout.page_size = 5
 
 gameCountText.Create("")
 systemGallery = SystemGallery(systemGallery_args, imageSeparator, imageExtension)

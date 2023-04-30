@@ -8,11 +8,11 @@ class Color
 	green = 0
 	alpha = 0
 		
-	constructor(_red, _blue, _green, _alpha)
+	constructor(_red, _green, _blue, _alpha = 255)
 	{
 		red = _red
-		blue = _blue
 		green = _green
+		blue = _blue
 		alpha = _alpha
 	}
 	
@@ -67,18 +67,18 @@ class Image
 		return this
 	}
 	
-	function WithPinch(_pinch_x, _pinch_y)
+	function WithPinch(_pinch_x, _pinch_y, _baseWidth)
 	{
-		pinch_x = _pinch_x
-		pinch_y = _pinch_y
+		pinch_x = fe.layout.width * _pinch_x / _baseWidth
+		pinch_y = fe.layout.width * _pinch_y / _baseWidth
 	
 		return this
 	}
 	
-	function WithSkew(_skew_x, _skew_y)
+	function WithSkew(_skew_x, _skew_y, _baseWidth)
 	{
-		skew_x = _skew_x
-		skew_y = _skew_y
+		skew_x = fe.layout.width * _skew_x / _baseWidth
+		skew_y = fe.layout.width * _skew_y / _baseWidth
 	
 		return this
 	}
@@ -197,16 +197,16 @@ class Text
 		return this
 	}
 	
-	function WithCharSize(_charSize)
+	function WithCharSize(_charSize, _baseWidth)
 	{
-		charSize = _charSize
+		charSize = fe.layout.width * _charSize / _baseWidth
 	
 		return this
 	}
 	
-	function WithColor(_color)
+	function WithColor(_red, _green, _blue)
 	{
-		color = _color
+		color = Color(_red, _green, _blue)
 	
 		return this
 	}
